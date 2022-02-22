@@ -338,14 +338,10 @@ void BST::put(int ky, int dt) {
   // insert
   B_Node* current = root;
   B_Node* p_current = 0;
-  B_Node** ad_p_current = 0;
+  B_Node** ad_p_current = &root;
   B_Node** ad_p_p_current = 0;
   // find and add new node
   while(1) {
-    // initial
-    if (ad_p_current == 0) {
-      ad_p_current = &root;
-    }
     // <
     if (ky < current->key) {
       if (current->left == 0) {
