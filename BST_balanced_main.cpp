@@ -522,16 +522,22 @@ void BST::Del_loop(int ky, B_Node** ad_p_p_current, B_Node** ad_p_current, B_Nod
         *ad_p_current = 0;// !!! very important; cut the link
         // delete
         delete current;
-        // #
-        // case (1) and case (21) nothing
-        // case (22) then ...
-        if (!current->isRed() && (p_current->right != current)) {
+        // # after delete
+        // case (1) nothing
+        // case (21)
+        // case (22)
+        if (p_current->right != 0) {
           // rotate parent
           p_current = RotateLeft(p_current);
           *ad_p_p_current = p_current;
         }
-        if (p_current->right == 0) {
+        if (p_current->left != 0 && !p_current->left->isRed()) {
           p_current->left->color = true;
+          if (p_current->left->left != 0 && p_current->left->left->isRed()) {
+            p_current = RotateRight(p_current->left);
+            *ad_p_p_current = p_current;
+            FlipColor(p_current);
+          }
         }
       }
       // #
