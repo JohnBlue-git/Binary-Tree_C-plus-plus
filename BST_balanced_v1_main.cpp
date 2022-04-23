@@ -543,34 +543,36 @@ void BST::Del_loop(int ky, B_Node** ad_p_p_current, B_Node** ad_p_current, B_Nod
       // #
       // case (3)
       else if (current->left != 0 && current->right == 0) {
-        // relink
-        *ad_p_current = current->left;
-        current->left->color = false;
-        // delete
-        current->left = 0;// !!! prevent further delete
-        delete current;
-        //return;
+          ad_p_p_current = ad_p_current;
+          ad_p_current = &(current->left);
+          p_current = current;
+          current = current->left;
+          B_Node* cur = current;
+          while (cur->right) {
+            ad_p_p_current = ad_p_current;
+            ad_p_current = &(cur->right);
+            p_current = current;
+            cur = cur->right;
+          }
+          current->key = cur->key;
+          current->data = cur->data;
+          Del_loop(cur->key, ad_p_p_current, ad_p_current, p_current, cur);
       }
       else {
-        // #
-        // case (42)
-        if (current->right->left != 0) {
-          // move
-          current->key = current->right->left->key;
-          current->data = current->right->left->data;
-          // delete (key, address of parent left or right)
-          Del_loop(current->right->left->key, &(current->right), &(current->right->left), current->right, current->right->left);
-        }
-        // #
-        // case (41)
-        else if (current->right != 0) {
-          // move
-          current->key = current->right->key;
-          current->data = current->right->data;
-          // delete (key, address of parent left or right)
-          Del_loop(current->right->key, ad_p_current, &(current->right), current, current->right);
-        }
-        //return;
+          ad_p_p_current = ad_p_current;
+          ad_p_current = &(current->right);
+          p_current = current;
+          current = current->right;
+          B_Node* cur = current;
+          while (cur->left) {
+            ad_p_p_current = ad_p_current;
+            ad_p_current = &(cur->left);
+            p_current = current;
+            cur = cur->left;
+          }
+          current->key = cur->key;
+          current->data = cur->data;
+          Del_loop(cur->key, ad_p_p_current, ad_p_current, p_current, cur);
       }
       return;
     }
