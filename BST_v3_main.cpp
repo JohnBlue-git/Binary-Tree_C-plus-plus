@@ -65,6 +65,7 @@ private:
   // function
   void print_loop(B_Node* current);// for print_v2
   void Del_loop(int ky, B_Node** p_current, B_Node* current);
+  B_Node* Del_loop2(int ky, B_Node* current);
 
 public:
   // constructor
@@ -392,7 +393,46 @@ void BST::Del_v2(int ky) {
   }
   // from root
   Del_loop(ky, 0, root);
+  //Del_loop2(ky, root);
 }
+
+B_Node* BST::Del_loop2(int ky, B_Node* current) {
+  if (current == 0) {
+    return 0;
+  }
+  else if (ky < current->key) {
+    current->left = Del_loop2(ky, current->left);
+  }
+  else if (ky > current->key) {
+    current->right = Del_loop2(ky, current->right);
+  }
+  // ky == current->key
+  else if (ky == current->key) {
+    if (current->left == 0 && current->right == 0) {
+      // relink
+      return 0;// !!! very important; cut the link
+    }
+    else if (current->left != 0 && current->right == 0) {
+        B_Node* cur = current->left;
+        while (cur->right) {
+          cur = cur->right;
+        }
+        current->key = cur->key;
+        current->data = cur->data;
+        cur = Del_loop2(cur->key, cur);
+    }
+    else {
+        B_Node* cur = current->right;
+        while (cur->left) {
+          cur = cur->left;
+        }
+        current->key = cur->key;
+        current->data = cur->data;
+        cur = Del_loop2(cur->key, cur);
+    }
+  }
+}
+
 
 
 int main()
