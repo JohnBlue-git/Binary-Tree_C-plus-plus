@@ -213,29 +213,27 @@ void BST::Del(int ky, BST** p_current = 0) {
         delete current;
         return;
       }
-      else if (current->left == 0 && current->right != 0) {
-        *p_current = current->right;
-        current->right = 0;
-        delete current;
-        return;
+      else if (current->left != 0 && current->right == 0) {
+        p_current = &(current->left);
+        BST* cur = current->left;
+        while (cur->right) {
+          p_current = &(cur->right);
+          cur = cur->right;
+        }
+        current->data = cur->data;
+        Del(cur->data, p_current);
       }
       else {
-        if (current->right->left != 0) {
-          // move
-          current->key = current->right->left->key;
-          current->data = current->right->left->data;
-          // delete (key, address of parent left or right)
-          current->right->left->Del(current->right->left->key, &(current->right->left));
+        p_current = &(current->right);
+        BST* cur = current->right;
+        while (cur->left) {
+          p_current = &(cur->left);
+          cur = cur->left;
         }
-        else if (current->right != 0) {
-          // move
-          current->key = current->right->key;
-          current->data = current->right->data;
-          // delete (key, address of parent left or right)
-          current->right->Del(current->right->key, &(current->right));
-        }
-        return;
+        current->data = cur->data;
+        Del(cur->data, p_current);
       }
+      return;
     }
   }
   // not found
