@@ -392,8 +392,8 @@ void BST::Del_v2(int ky) {
     return;
   }
   // from root
-  Del_loop(ky, 0, root);
-  //Del_loop2(ky, root);
+  //root = Del_loop(ky, 0, root);
+  root = Del_loop2(ky, root);
 }
 
 B_Node* BST::Del_loop2(int ky, B_Node* current) {
