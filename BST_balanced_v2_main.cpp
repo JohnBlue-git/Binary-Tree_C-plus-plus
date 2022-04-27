@@ -537,7 +537,7 @@ void BST::Del(int ky) {
     return;
   }
   // from root
-  Del_loop(ky, root, 0);
+  root = Del_loop(ky, root, 0);
 }
 
 int main()
