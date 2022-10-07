@@ -1,6 +1,6 @@
 /*
 Auther: John Blue
-Time: 2022/1
+Time: 2022/10
 Platform: ATOM with MinGw and g++compiler
 Object: Balanced Binary Search Tree
 
