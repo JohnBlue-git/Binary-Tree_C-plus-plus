@@ -6,7 +6,7 @@ Platform: ATOM with MinGw and g++compiler
 Object: Binary Search Tree
 Version 2: BST as Node
 Version 3: BST as controller to Node
-Version 4(*): BST as controller to Node AND refine Del_loop(...)
+Version 4(*): BST as controller to Node AND refine put_loop(...) and Del_loop(...)
 */
 
 #include <iostream> // i/o
@@ -63,10 +63,7 @@ private:
   B_Node* root;
   // operator
   BST& operator=(const BST& copy);
-  // function
-  void print_loop(B_Node* current);// for print_v2
-  void Del_loop(int ky, B_Node** p_current, B_Node* current);
-  B_Node* Del_loop2(int ky, B_Node* current);
+  
 
 public:
   // constructor
@@ -75,22 +72,22 @@ public:
   ~BST();
 
   // function
-  // print method 1:
-  //void print() with current = 0;
-  void print(B_Node* current);
-  // print method 2:
-  // advantage >> hiding looping var from client
-  void print_v2();
+  void print();
+  void print_loop(B_Node* current);
+  
   // function
-  void put(int ky, int dt);
+  
   int get(int ky);
   int MinK();
   int MaxK();
   //int floor(int ky);
   //int ceil(int ky);
-  //void Del(ky) with p_current = 0, current = 0
-  void Del_v1(int ky, B_Node** p_current, B_Node* current);
-  void Del_v2(int ky);
+
+  void put(int ky, int dt);
+  B_Node* put_loop(B_Node* current, int ky, int dt);
+	
+  void Del(int ky);
+  B_Node* Del_loop(B_Node* current, int ky);
 };
 
 B_Node::B_Node(const B_Node& copy) {
@@ -147,28 +144,6 @@ BST::~BST() {
   */
 }
 
-void BST::print(B_Node* current = 0) {
-  // check
-  if (root == 0) {
-    std::cout << "empty\n";
-    return;
-  }
-  // first round?
-  if (current == 0) {
-    current = root;
-  }
-  // middle
-  std::cout << "key" << current->key << ": " << current->data << "\n";
-  // left
-  if (current->left != 0) {
-    print(current->left);
-  }
-  // right
-  if (current->right != 0) {
-    print(current->right);
-  }
-}
-
 void BST::print_loop(B_Node* current) {
   // middle
   std::cout << "key" << current->key << ": " << current->data << "\n";
@@ -182,7 +157,7 @@ void BST::print_loop(B_Node* current) {
   }
 }
 
-void BST::print_v2() {
+void BST::print() {
   // check
   if (root == 0) {
     std::cout << "empty\n";
@@ -193,36 +168,28 @@ void BST::print_v2() {
 }
 
 void BST::put(int ky, int dt) {
-  // first?
   if (root == 0) {
     root = new B_Node(ky, dt);
     return;
   }
+	
+  put(root, ky, dt);
+}
+
+B_Node* BST::put_loop(B_Node* current, int ky, int dt) {
+  // first?
+  if (current == 0) {
+    return new B_Node(ky, dt);
+  }
   // insert
-  B_Node* current = root;
-  while(1) {
-    if (ky < current->key) {
-      if (current->left == 0) {
-        current->left = new B_Node(ky, dt);
-        break;
-      }
-      else {
-        current = current->left;
-      }
-    }
-    else if (ky > current->key) {
-      if (current->right == 0) {
-        current->right = new B_Node(ky, dt);
-        break;
-      }
-      else {
-        current = current->right;
-      }
-    }
-    else if (ky == current->key) {
+  if (ky < current->key) {
+        current->left = put(current->left, ky, dt);
+  }
+  else if (ky > current->key) {
+          current->right = put(current->right, ky, dt);
+  }
+  else if (ky == current->key) {
       current->data = dt;
-      break;
-    }
   }
 }
 
@@ -258,135 +225,8 @@ int BST::MaxK() {
   return current->data;
 }
 
-// case:
-// no kid
-// one kid
-// two kids
-void BST::Del_v1(int ky, B_Node** p_current = 0, B_Node* current = 0) {
-  //B_Node** p_current; address of parent left or right pointer
-  //
-  // check
-  if (root == 0) {
-    std::cout << "empty\n";
-    return;
-  }
-  // first round?
-  if (current == 0) {
-    current = root;
-  }
-  // deleting
-  while (current != 0) {
-    // search
-    if (ky < current->key) {
-      p_current = &(current->left);
-      current = current->left;
-    }
-    else if (ky > current->key) {
-      p_current = &(current->right);
-      current = current->right;
-    }
-    // delete
-    else if (ky == current->key) {
-      if (current->left == 0 && current->right == 0) {
-        *p_current = 0;// !!! very important; cut the link; prevent further delete
-        delete current;
-        return;
-      }
-      else if (current->left != 0 && current->right == 0) {
-          p_current = &(current->left);
-          B_Node* cur = current->left;
-          while (cur->right) {
-            p_current = &(cur->right);
-            cur = cur->right;
-          }
-          current->data = cur->data;
-          Del_loop(cur->data, p_current, cur);
-      }
-      else {
-          p_current = &(current->right);
-          B_Node* cur = current->right;
-          while (cur->left) {
-            p_current = &(cur->left);
-            cur = cur->left;
-          }
-          current->data = cur->data;
-          Del_loop(cur->data, p_current, cur);
-      }
-      return;
-    }
-  }
-  // not found
-  std::cout << "no such key\n";
-}
 
-// case:
-// no kid
-// one kid
-// two kids
-void BST::Del_loop(int ky, B_Node** p_current, B_Node* current) {
-  //B_Node** p_current; address of parent left or right pointer
-  //
-  // deleting
-  while (current != 0) {
-    // search
-    if (ky < current->key) {
-      p_current = &(current->left);
-      current = current->left;
-    }
-    else if (ky > current->key) {
-      p_current = &(current->right);
-      current = current->right;
-    }
-    // delete
-    else if (ky == current->key) {
-      if (current->left == 0 && current->right == 0) {
-        // relink
-        *p_current = 0;// !!! very important; cut the link
-        // delete
-        delete current;
-        //return;
-      }
-      else if (current->left != 0 && current->right == 0) {
-        // relink
-        *p_current = current->left;
-        // delete
-        current->left = 0;// !!! prevent further delete
-        delete current;
-        //return;
-      }
-      else if (current->left == 0 && current->right != 0) {
-        // relink
-        *p_current = current->right;
-        // delete
-        current->right = 0;// !!! prevent further delete
-        delete current;
-        //return;
-      }
-      else {
-        if (current->right->left != 0) {
-          // move
-          current->key = current->right->left->key;
-          current->data = current->right->left->data;
-          // delete (key, address of parent left or right)
-          Del_loop(current->right->left->key, &(current->right->left), current->right->left);
-        }
-        else if (current->right != 0) {
-          // move
-          current->key = current->right->key;
-          current->data = current->right->data;
-          // delete (key, address of parent left or right)
-          Del_loop(current->right->key, &(current->right), current->right);
-        }
-        //return;
-      }
-      return;
-    }
-  }
-  // not found
-  std::cout << "no such key\n";
-}
-
-void BST::Del_v2(int ky) {
+void BST::Del(int ky) {
   // check
   if (root == 0) {
     std::cout << "empty\n";
@@ -397,15 +237,15 @@ void BST::Del_v2(int ky) {
   root = Del_loop2(ky, root);
 }
 
-B_Node* BST::Del_loop2(int ky, B_Node* current) {
+B_Node* BST::Del_loop(B_Node* current, int ky) {
   if (current == 0) {
     return 0;
   }
   else if (ky < current->key) {
-    current->left = Del_loop2(ky, current->left);
+    current->left = Del_loop(current->left, ky);
   }
   else if (ky > current->key) {
-    current->right = Del_loop2(ky, current->right);
+    current->right = Del_loop(current->right, ky);
   }
   // ky == current->key
   else if (ky == current->key) {
@@ -413,7 +253,10 @@ B_Node* BST::Del_loop2(int ky, B_Node* current) {
       // relink
       return 0;// !!! very important; cut the link
     }
-    else {// !!! del_llop2() of v4 is right; v3 is wrong due to "cur = ..." cannot remeber the change
+    else {
+// method **
+// !!! del_llop2() of v4 is right; v3 is wrong due to "cur = ..." cannot remeber the change
+	    /*
       B_Node** cur = 0;
       if (current->left != 0 && current->right == 0) {
                 cur = &(current->left);
@@ -431,11 +274,12 @@ B_Node* BST::Del_loop2(int ky, B_Node* current) {
       current->key = (*cur)->key;
       current->data = (*cur)->data;
       *cur = Del_loop2((*cur)->key, *cur);
-      
       return current;
-      
-      /*
-      # a more straight forward alogorithm
+      */
+	
+// method *
+// a more straight forward alogorithm
+	    /*
             if (current->right == 0) return current->left;
             if (current->left  == 0) return current->right;
 
@@ -443,9 +287,23 @@ B_Node* BST::Del_loop2(int ky, B_Node* current) {
             current = Min(tmp->right);
             current->right = deleteMin(tmp->right);
             current->left = tmp->left;
-	          return current;
-       */
-      
+	    return current;
+	    */
+	    
+	    // method * expanding
+	    if (current->right == 0) return current->left;
+            if (current->left  == 0) return current->right;
+
+	    //
+            B_Node* tmp = current;
+	    //
+	    current = tmp->right
+            while (current->left) current = current->left;
+	    //
+            current->right = Del_loop(current);
+            current->left = tmp->left;
+	    //
+	    return current;
     }
   }
 }
