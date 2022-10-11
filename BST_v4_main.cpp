@@ -233,8 +233,7 @@ void BST::Del(int ky) {
     return;
   }
   // from root
-  //root = Del_loop(ky, 0, root);
-  root = Del_loop2(ky, root);
+  root = Del_loop(ky, root);
 }
 
 B_Node* BST::Del_loop(B_Node* current, int ky) {
@@ -249,14 +248,16 @@ B_Node* BST::Del_loop(B_Node* current, int ky) {
   }
   // ky == current->key
   else if (ky == current->key) {
+    
+// method **
+// !!! del_llop2() of v4 is right; v3 is wrong due to "cur = ..." cannot remeber the change
+/*
     if (current->left == 0 && current->right == 0) {
-      // relink
+        // relink
       return 0;// !!! very important; cut the link
     }
     else {
-// method **
-// !!! del_llop2() of v4 is right; v3 is wrong due to "cur = ..." cannot remeber the change
-	    /*
+    
       B_Node** cur = 0;
       if (current->left != 0 && current->right == 0) {
                 cur = &(current->left);
@@ -275,7 +276,7 @@ B_Node* BST::Del_loop(B_Node* current, int ky) {
       current->data = (*cur)->data;
       *cur = Del_loop2((*cur)->key, *cur);
       return current;
-      */
+*/
 	
 // method *
 // a more straight forward alogorithm
@@ -330,8 +331,6 @@ int main()
   std::cout << "  BST:\n";
   std::cout << "with print():\n";
   bt.print();
-  std::cout << "with print_v2():\n";
-  bt.print_v2();
   std::cout << "\n";
   // get
   std::cout << "get key(8):" << bt.get(8) << "\n";
@@ -348,11 +347,11 @@ int main()
   // order of key when print: 8, 4, 2, 1, 3, 6, 5, 7, 13, 10, 9, 11
   //
   std::cout << "Del(15):\n";
-  bt.Del_v2(15);
+  bt.Del(15);
   std::cout << "Del(14):\n";
-  bt.Del_v2(14);
+  bt.Del(14);
   std::cout << "Del(12):\n";
-  bt.Del_v2(12);
+  bt.Del(12);
   bt.print();
   std::cout << "\n";
   // copy
