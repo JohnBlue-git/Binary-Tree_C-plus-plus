@@ -83,20 +83,17 @@ private:
   BST& operator=(const BST& copy);
   // function
   void print_loop(B_Node* current);// for print_v2
-  B_Node* Del_loop(int ky, B_Node* current, B_Node** parent);
+
+  B_Node* put(B_Node* h, int ky, int dt);
+  B_Node* putBalanced(B_Node* h)
+    
+  B_Node* Del_loop(B_Node* current, int ky);
+  B_Node* delBalanced(B_Node* h);
+  B_Node* Del_Min(B_Node* h);
   // function
   B_Node* RotateLeft(B_Node* h);
   B_Node* RotateRight(B_Node* h);
   void FlipColor(B_Node* h);
-  B_Node* put(B_Node* h, int ky, int dt);
-
-  //
-  bool isRed(B_Node* node) const {
-    if (node == 0) {
-      return false;
-    }
-    return node->color;
-  }
 
 public:
   // constructor
@@ -107,12 +104,23 @@ public:
   // function
   void print();
   // function
-  void put(int ky, int dt);
   int get(int ky);
   int MinK();
   int MaxK();
   //int floor(int ky);
   //int ceil(int ky);
+  //
+  bool isRed(B_Node* node) const {
+    if (node == 0) return false;
+    return node->color;
+  }
+  bool isLRBT();
+  bool isBST(B_Node* node);
+  bool isBalanced(B_Node* node);
+  int blackLen(B_Node* node);
+  bool is23(B_Node* node);
+  //
+  void put(int ky, int dt);
   void Del(int ky);
 };
 
@@ -200,13 +208,47 @@ void BST::print() {
   print_loop(root);
 }
 
+int BST::MinK() {
+  B_Node* current = root;
+  while(current->left != 0) {
+    current = current->left;
+  }
+  return current->data;
+}
 
+int BST::MaxK() {
+  B_Node* current = root;
+  while(current->right != 0) {
+    current = current->right;
+  }
+  return current->data;
+}
+
+//
+
+int BST::get(int ky) {
+  B_Node* current = root;
+  while (current != 0) {
+    if (ky < current->key) {
+      current = current->left;
+    }
+    else if (ky > current->key) {
+      current = current->right;
+    }
+    else if (ky == current->key) {
+      return current->data;
+    }
+  }
+  return - 1;
+}
+
+//
 
 B_Node* BST::RotateLeft(B_Node* h) {
   // check
-  //if (!h->right->isRed()) {
-    //return h;
-  //}
+  if (h->right == 0) {
+    return h;
+  }
   // rotate
   B_Node* x = h->right;
   h->right = x->left;
@@ -218,9 +260,9 @@ B_Node* BST::RotateLeft(B_Node* h) {
 
 B_Node* BST::RotateRight(B_Node* h) {
   // check
-  //if (!h->left->isRed()) {
-    //return h;
-  //}
+  if (h->left == 0) {
+    return h;
+  }
   // rotate
   B_Node* x = h->left;
   h->left = x->right;
@@ -241,36 +283,6 @@ void BST::FlipColor(B_Node* h) {
   h->right->color = false;
 }
 
-// Method 1
-// int the end node, there have mainly two cases
-// case 1, insert in 2 key:
-// case 2, insert in 2 key:
-//
-// (insert v)
-// insert in left:
-// case 1:
-//     Node(black)
-// Left(insert) Right(null)
-//
-// case 2 v smaller:
-//    Node(red)
-//Left(insert) Right(null)
-//
-// insert in Right:
-// case 1:
-//     Node(black)
-// Left(null) Right(insert)
-//
-// case 2 v between:
-//     Node(red)
-// Left(null) Right(insert)
-//
-// case 2 v larger
-//     Node(black)
-// Left(red) Right(insert)
-//
-// Method 2
-// in fact, we just have to consideer whether it is LLRB?
 //
 // LLRB should be:
 // has only left lean red link
@@ -292,56 +304,60 @@ void BST::FlipColor(B_Node* h) {
 // (4) this one do not exist in the end node
 //     Node(black)
 // Left(black) Right(black)
+
+bool RBT::isLRBT() {
+ if (this->root == 0) return true;
+ 
+ this->root->color = false;
+ if (this->root->color) return false;
+ 
+ /* RBT is not necessary fully balanced !!!
+ //https://stackoverflow.com/questions/28531044/is-red-black-tree-balanced
+ */
+ return isBST(this->root) && is23(this->root) && isBalanced(this->root);
+ 
+ return isBST(this->root) && is23(this->root);
+}
+
+bool RBT::isBST(B_Node* node) {
+    if (node == 0) return true;
+
+    if (node->left != NULL && node->left->data > node->data) return false;
+
+    if (node->right != NULL && node->data > node->right->data) return false;
+
+    return isBST(node->left) && isBST(node->right);
+}
+
+bool RBT::isBalanced(B_Node* node) {
+        if (node == 0) return true;
+        
+        if (abs(blackLen(node->left) - blackLen(node->right)) > 1) return false;
+        
+        return isBalanced(node->left) && isBalanced(node->right);
+}
+
+int RBT::blackLen(B_Node* node) {
+    if (node == 0) return 0;
+    
+    if (isRed(node)) return max(blackLen(node->left), blackLen(node->right));
+    else return max(blackLen(node->left), blackLen(node->right)) + 1;
+}
+
+bool RBT::is23(B_Node* node) {
+    if (node == 0) return true;
+
+    if (isRed(node->right)) return false;
+
+    if (node != root && isRed(node) && isRed(node->left)) return false;
+    
+    if (node->left == 0 && node->right != 0) return false;
+
+    return is23(node->left) && is23(node->right);
+}
+
 //
-// LLRB right after insert red link would have:
-// after insertion, it may violate the rule:
-// (11)
-//     Node(red)
-// Left(red) Right(null)
-//
-// (12)
-//     Node(red)
-// Left(null) Right(red)
-//
-// (21)
-//     Node(black)
-// Node(red) Right(red)
-//
-// (31)
-//     Node(black)
-// Node(red) Right(null)
-//
-// (32)
-//     Node(black)
-// Node(null) Right(red)
-//
-// then what is violated and what to do:
-//
-// (11)
-//     Node(red)
-// Left(red) Right(null)
-// then do
-// operation 1
-// break
-//
-// (12)
-//     Node(red)
-// Left(null) Right(red)
-// then do
-// operation 2
-// continue ... will meet operation 1
-//
-// (21)
-//     Node(black)
-// Left(red) Right(red)
-// operation 3
-// break
-//
-// (32)
-//     Node(black)
-// Left(null) Right(red)
-// operation 4
-// break
+
 void BST::put(int ky, int dt) {
   // first?
   if (root == 0) {
@@ -353,6 +369,8 @@ void BST::put(int ky, int dt) {
 }
 // insert the key-value pair in the subtree rooted at h
 B_Node* BST::put(B_Node* h, int ky, int dt) {
+    // recursive
+  
     if (h == 0) {
       return new B_Node(ky, dt);
     }
@@ -369,180 +387,105 @@ B_Node* BST::put(B_Node* h, int ky, int dt) {
 
     // fix-up any right-leaning links
 
-    if (!isRed(h->left) && isRed(h->right)) {// case (12) (32)
-      h = RotateLeft(h);
-    }
-    if (isRed(h->left)) {
-      if (isRed(h->left->left)) {// case (11) after return of case (12) (32)
-        h = RotateRight(h);
-      }
-    }
-    if (isRed(h->left) && isRed(h->right)) {// case (21)
-      FlipColor(h);
-    }
-    // case (31)
+    h = putBalanced(h);
 
     return h;
 }
 
+B_Node* RBT::putBalanced(B_Node* h) {
+    // fix-up any right-leaning links
 
-
-
-
-int BST::get(int ky) {
-  B_Node* current = root;
-  while (current != 0) {
-    if (ky < current->key) {
-      current = current->left;
+    if (!isRed(h->left) && isRed(h->right)) {
+      h = RotateLeft(h);
     }
-    else if (ky > current->key) {
-      current = current->right;
+    if (isRed(h->left)) {
+      if (isRed(h->left->left)) {
+        h = RotateRight(h);
+      }
     }
-    else if (ky == current->key) {
-      return current->data;
+    if (isRed(h->left) && isRed(h->right)) {
+      FlipColor(h);
     }
-  }
-  return - 1;
+    
+    return h;
 }
 
-int BST::MinK() {
-  B_Node* current = root;
-  while(current->left != 0) {
-    current = current->left;
-  }
-  return current->data;
-}
+//
 
-int BST::MaxK() {
-  B_Node* current = root;
-  while(current->right != 0) {
-    current = current->right;
-  }
-  return current->data;
-}
-
-// case of deletion:
-// (1) no kid
-// (2) one kid
-// (3) two kids
-//
-// LLRB should be:
-// has only left lean red link
-// has no side by side red link
-//
-// (1)
-//     Node(red)
-// Left(null) Right(null)
-//
-// (2)
-//     Node(black)
-// Node(null) Right(null)
-//
-// (3)
-//     Node(black)
-// Left(red) Right(null)
-//
-// (4)
-//     Node(black)
-// Left(black) Right(black)
-//
-// the following condition is the posibility through the whole tree
-// case of deletion with color
-// (1)
-//     Node(red)*
-// Left(null) Right(null)
-//
-// (21)
-//           Parent(black)
-// Node(black)           Node(black)*
-//     ...          Node(null) Right(null)
-//
-// (22)
-//                Parent(black)
-//     Node(black)*      Node(black)
-// Node(null) Right(null)           ...
-//
-// (3)
-//                Parent(black)
-//     Node(black)*      Node(black)
-// Left(red) Right(null)           ...
-//
-// (41)
-//        Node(black)*
-// Left(black)     Right(black)
-//     ...      ...            ...
-// (42)
-//        Node(black)*
-// Left(black)     Right(black)
-//     ...    Left(not null)   ...
-//
-B_Node* BST::Del_loop(int ky, B_Node* current, B_Node** parent) {
-  if (current == 0) {
-    return 0;
-  }
-  else if (ky < current->key) {
-    current->left = Del_loop(ky, current->left, &(current->left));
-
-    if (current->left == 0 && current->right != 0) {
-      current = RotateLeft(current);
-    }
-  }
-  else if (ky > current->key) {
-    current->right = Del_loop(ky, current->right, &(current->right));
-
-    if (current->left != 0 && current->right == 0) {
-      current->left->color = true;
-    }
-  }
-  // ky == current->key
-  else if (ky == current->key) {
-    if (current->left == 0 && current->right == 0) {
-      // relink
-      return 0;// !!! very important; cut the link
-    }
-    else if (current->left != 0 && current->right == 0) {
-        B_Node* cur = current->left;
-        parent = &(current->left);
-        while (cur->right) {
-          parent = &(cur->right);
-          cur = cur->right;
-        }
-        current->key = cur->key;
-        current->data = cur->data;
-        *parent = Del_loop(cur->key, cur, parent);
-    }
-    else {
-        B_Node* cur = current->right;
-        parent = &(current->right);
-        while (cur->left) {
-          parent = &(cur->left);
-          cur = cur->left;
-        }
-        current->key = cur->key;
-        current->data = cur->data;
-        *parent = Del_loop(cur->key, cur, parent);
-    }
-  }
-
-  if (current->left != 0 && isRed(current->left)) {
-    if (current->left->left != 0 && isRed(current->left->left)) {
-      *parent = RotateRight(current->left);
-      FlipColor(current);
-    }
-  }
-
-  return current;
-}
-
-void BST::Del(int ky) {
+void RBT::Del(int ky) {
   // check
   if (root == 0) {
     std::cout << "empty\n";
     return;
   }
   // from root
-  root = Del_loop(ky, root, 0);
+  root = Del_loop(ky, root);
 }
+
+B_Node* RBT::Del_loop(B_Node* current, int ky) {
+  if (current == 0) {
+    return 0;
+  }
+  else if (ky < current->key) {
+    current->left = Del_loop(current->left, ky);
+  }
+  else if (ky > current->key) {
+    current->right = Del_loop(current->right, ky);
+  }
+  // ky == current->key
+  else if (ky == current->key) {	    
+	    // 
+	    if (current->right == 0) return current->left;
+      if (current->left  == 0) return current->right;
+
+	    //
+      B_Node* tmp = current;
+	    //
+	    current = tmp->right
+      while (current->left) current = current->left;
+	    //
+      current->right = Del_Min(tmp->right);
+      current->left = tmp->left;
+      //
+      current = delBalanced(current);// balanced
+	    //
+	    return current;
+    }
+  }
+}
+
+B_Node* RBT::Del_Min(B_Node* h) {
+	if h->left == 0 return Del_loop(h, h->key);
+	h->left = Del_Min(h->left);
+  h = delBalanced(h);
+  return h;
+}
+
+B_Node* RBT::delBalanced(B_Node* h) {
+    if (h->left != 0 && h->right == 0) h->left->color = true;
+
+    if (h->left == 0 && h->right != 0) {
+      h = RotateLeft(h);
+      
+      // rotate, then have to check left
+      if (h->left) h->left = delBalanced(h->left);
+    }
+    if (isRed(h->left)) {
+      if (isRed(h->left->left)) {
+        h = RotateRight(h);
+        
+        // rotate, then have to check right
+        if (h->right) h->right = delBalanced(h->right);
+      }
+    }
+    if (isRed(h->left) && isRed(h->right)) {
+      FlipColor(h);
+    }
+    
+    return h;
+}
+
+
 
 int main()
 {
