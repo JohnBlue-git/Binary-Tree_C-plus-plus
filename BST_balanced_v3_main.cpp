@@ -455,8 +455,8 @@ B_Node* RBT::Del_loop(B_Node* current, int ky) {
 }
 
 B_Node* RBT::Del_Min(B_Node* h) {
-	if h->left == 0 return Del_loop(h, h->key);
-	h->left = Del_Min(h->left);
+  if h->left == 0 return Del_loop(h, h->key);
+  h->left = Del_Min(h->left);
   h = delBalanced(h);
   return h;
 }
