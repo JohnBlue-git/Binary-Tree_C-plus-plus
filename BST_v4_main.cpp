@@ -88,6 +88,7 @@ public:
 	
   void Del(int ky);
   B_Node* Del_loop(B_Node* current, int ky);
+  B_Node* Del_Min(B_Node* h);
 };
 
 B_Node::B_Node(const B_Node& copy) {
@@ -301,12 +302,19 @@ B_Node* BST::Del_loop(B_Node* current, int ky) {
 	    current = tmp->right
             while (current->left) current = current->left;
 	    //
-            current->right = Del_loop(current);
+            current->right = Del_Min(tmp->right);
             current->left = tmp->left;
 	    //
 	    return current;
     }
   }
+}
+
+B_Node* RBT::Del_Min(B_Node* h) {
+  if h->left == 0 return Del_loop(h, h->key);
+  h->left = Del_Min(h->left);
+  h = delBalanced(h);
+  return h;
 }
 
 
